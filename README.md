@@ -16,10 +16,10 @@ To install monitor-services, use the following steps:
    ```
    git clone https://github.com/ShadowStrikeHQ/monitor-services.git
    ```
-3. Install the monitor-services package:
+3. Run the tool from the cloned directory (the repo ships no setup.py; the tool is the single script `main.py`):
    ```
    cd monitor-services
-   python setup.py install
+   python main.py --services <name> [<name> ...]
    ```
 
 ### Usage Examples
@@ -27,18 +27,15 @@ To install monitor-services, use the following steps:
 To use monitor-services, run the following command:
 
 ```
-monitor-services [options]
+python main.py --services sshd cron
 ```
 
 The following options are available:
 
-- `-s`, `--service`: The name of the service to monitor.
-- `-i`, `--interval`: The interval (in seconds) at which to check the service status.
-- `-t`, `--timeout`: The timeout (in seconds) for each service check.
-- `-w`, `--warning`: The warning threshold for the service status.
-- `-c`, `--critical`: The critical threshold for the service status.
-- `-v`, `--verbose`: Enable verbose logging.
+- `--services`: List of services to monitor, separated by spaces. Required; one or more service names.
 - `-h`, `--help`: Show this help message and exit.
+
+The tool checks each named service once and logs whether it is running, warning if it is not and erroring if it is not found. Service lookup uses `psutil.win_service_iter()`, so the tool runs on Windows. Note that importing main.py creates a `monitor_services.log` file in the working directory.
 
 ### Security Warnings
 
