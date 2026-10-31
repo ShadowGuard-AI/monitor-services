@@ -36,6 +36,7 @@ def monitor_services(service_names):
     Args:
         service_names (list): List of service names to monitor.
     """
+    all_running = True
     try:
         for service_name in service_names:
             service_found = False
@@ -46,11 +47,15 @@ def monitor_services(service_names):
                     logging.info(f"Service '{service_name}' is {service_status}.")
                     if service_status != "running":
                         logging.warning(f"Service '{service_name}' is not running!")
+                        all_running = False
                     break
             if not service_found:
                 logging.error(f"Service '{service_name}' not found.")
+                all_running = False
     except Exception as e:
         logging.error(f"An error occurred while monitoring services: {e}")
+        return False
+    return all_running
 
 def main():
     """
@@ -58,7 +63,13 @@ def main():
     """
     try:
         args = setup_argparse()
-        monitor_services(args.services)
+        if not hasattr(psutil, "win_service_iter"):
+            logging.error("This tool is Windows only: the Windows service surface (psutil.win_service_iter) is not available on this platform. No services were checked.")
+            sys.exit(1)
+        if not monitor_services(args.services):
+            sys.exit(1)
+    except SystemExit:
+        raise
     except Exception as e:
         logging.critical(f"Critical error in main execution: {e}")
         sys.exit(1)
