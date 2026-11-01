@@ -13,7 +13,7 @@ To install monitor-services, use the following steps:
 1. Install the one third party dependency, psutil, named in `requirements.txt` (`pip install -r requirements.txt`). Everything else the tool imports is in the Python standard library.
 2. Clone the monitor-services repository:
    ```
-   git clone https://github.com/ShadowStrikeHQ/monitor-services.git
+   git clone https://github.com/ShadowGuard-AI/monitor-services.git
    ```
 3. Run the tool from the cloned directory (the repo ships no setup.py; the tool is the single script `main.py`):
    ```
