@@ -7,6 +7,11 @@ import sys
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
+    # This runs at import, before any argument or platform
+    # check: merely importing the module, or asking for help,
+    # creates monitor_services.log in the current directory.
+    # On a platform the tool will refuse to run on, the log file
+    # is still left behind as the only trace of the attempt.
     handlers=[
         logging.FileHandler("monitor_services.log"),
         logging.StreamHandler(sys.stdout)
@@ -40,7 +45,19 @@ def monitor_services(service_names):
     try:
         for service_name in service_names:
             service_found = False
+            # The whole service list is re-enumerated from the top for
+            # every name asked about, so the cost grows with names times
+            # services, and each enumeration is a fresh snapshot: a
+            # service that changes state mid check is read from a
+            # different moment than the one before it, and the verdict
+            # mixes moments while reading as one.
             for service in psutil.win_service_iter():
+                # The comparison is against the service's key name, the
+                # short identifier, not the display name a person sees in
+                # the services panel. Ask for a service by the name on the
+                # screen and it reports not found, in the same words it uses
+                # for a service that genuinely does not exist, so a naming
+                # slip and a missing service are indistinguishable.
                 if service.name().lower() == service_name.lower():
                     service_found = True
                     service_status = service.status()
@@ -52,6 +69,11 @@ def monitor_services(service_names):
             if not service_found:
                 logging.error(f"Service '{service_name}' not found.")
                 all_running = False
+    # One service raising while its status is read lands here
+    # for the whole check: the remaining services are never
+    # looked at, the run returns failure, and the exit code
+    # cannot say whether one service broke the check or every
+    # service is down.
     except Exception as e:
         logging.error(f"An error occurred while monitoring services: {e}")
         return False
